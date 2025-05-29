@@ -32,7 +32,7 @@ services:
       # H26x; otherwise, it should be disabled or ignored.
       # Available presets: "ultrafast", "superfast", "veryfast", "faster", 
       # "fast", "medium", "slow", "slower", "veryslow".
-      STREAM_H26X_PRESET: "ultrafast"
+      STREAM_H26X_PRESET: "veryfast"
 
       # Videos server options
       SERVER_ENABLED: "false" # Whether to enable the built-in video server
@@ -41,5 +41,25 @@ services:
       SERVER_PORT: "3000" # The port number the video server will listen on
     volumes:
       - ./videos:/home/bots/StreamBot/videos
+    network_mode: "service:warp"
+    depends_on:
+      - warp
+  warp:
+    image: caomingjun/warp
+    container_name: warp
+    restart: always
+    devices:
+      - /dev/net/tun:/dev/net/tun
     ports:
-      - 3000:3000
+      - '1080:1080'
+      - '3000:3000'
+    environment:
+      - WARP_SLEEP=2
+      - WARP_LICENSE_KEY= # Your Cloudflare Warp license key
+    cap_add:
+      - NET_ADMIN
+    sysctls:
+      - net.ipv6.conf.all.disable_ipv6=0
+      - net.ipv4.conf.all.src_valid_mark=1
+    volumes:
+      - ./data:/var/lib/cloudflare-warp
